@@ -1,0 +1,41 @@
+name: Check formatting
+
+on: workflow_call
+
+jobs:
+  format-check:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: install terraform
+      run: |
+        sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update
+        sudo apt-get remove terraform
+        sudo apt-get install terraform=1.0.9
+        /usr/bin/terraform --version
+
+    - name: scan terraform
+      run: |
+        if /usr/bin/terraform fmt -check . ; then
+          echo "no problems detected"
+        else
+          echo "problem detected in these files"
+          exit 1
+        fi
+
+    - name: install black
+      run: |
+        pip install black
+    
+    - name: scan with black
+      run: |
+        black . --check
+
+      
