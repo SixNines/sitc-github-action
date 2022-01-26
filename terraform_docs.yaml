@@ -1,0 +1,20 @@
+name: Terraform docs
+
+on: workflow_call
+
+jobs:
+  format-check:
+    name: Check terraform docs
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Render terraform docs and check for diff
+      uses: terraform-docs/gh-actions@v0.11.0
+      with:
+        working-dir: .
+        output-file: README.md
+        output-method: inject
+        fail-on-diff: "true"

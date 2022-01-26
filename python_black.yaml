@@ -1,0 +1,20 @@
+name: Python black
+
+on: workflow_call
+
+jobs:
+  format-check:
+    name: Check python black
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: install black
+      run: |
+        pip install black
+    
+    - name: scan with black
+      run: |
+        black . --check

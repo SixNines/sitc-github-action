@@ -1,10 +1,10 @@
-name: Check formatting
+name: Terraform format
 
 on: workflow_call
 
 jobs:
   format-check:
-    name: Check Formatting
+    name: Check terraform fmt
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +21,7 @@ jobs:
         sudo apt-get install terraform=1.0.9
         /usr/bin/terraform --version
 
-    - name: scan terraform
+    - name: check terraform
       run: |
         if /usr/bin/terraform fmt -check . ; then
           echo "no problems detected"
@@ -29,13 +29,3 @@ jobs:
           echo "problem detected in these files"
           exit 1
         fi
-
-    - name: install black
-      run: |
-        pip install black
-    
-    - name: scan with black
-      run: |
-        black . --check
-
-      
