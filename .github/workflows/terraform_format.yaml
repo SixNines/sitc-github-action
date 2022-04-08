@@ -7,7 +7,7 @@ on:
         description: 'Version of terraform to use'
         required: false
         type: string
-        default: 'latest'
+        default: latest
 
 jobs:
   format-check:
