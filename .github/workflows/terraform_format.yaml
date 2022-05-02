@@ -30,7 +30,7 @@ jobs:
 
     - name: check terraform
       run: |
-        if /usr/bin/terraform fmt -check . ; then
+        if /usr/bin/terraform fmt -check -recursive . ; then
           echo "no problems detected"
         else
           echo "problem detected in these files"
