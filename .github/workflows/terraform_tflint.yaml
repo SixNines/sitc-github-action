@@ -4,7 +4,8 @@ on:
   workflow_call:
     inputs:
       working-directory:
-        description: Working directory
+        description: "Working directory"
+        type: string
         required: false
         default: "."
 
