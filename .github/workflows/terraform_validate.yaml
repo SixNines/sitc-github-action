@@ -1,0 +1,73 @@
+---
+name: Terraform Validate
+
+on:
+  workflow_call:
+    secrets:
+      TERRAFORM_VALIDATOR_KEY:
+        required: true
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: install terraform
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg software-properties-common curl jq
+          releases=https://apt.releases.hashicorp.com
+          curl -fsSL $releases/gpg | sudo apt-key add -
+          sudo apt-add-repository \
+            "deb [arch=amd64] $releases $(lsb_release -cs) main"
+          sudo apt-get update
+          sudo apt-get remove terraform
+          sudo apt-get install terraform=1.0.9
+          /usr/bin/terraform --version
+
+      - name: Generate Token
+        shell: bash
+        env:
+          TFPEM: ${{ secrets.TERRAFORM_VALIDATOR_KEY }}
+        run: |
+          header_template='{"typ": "JWT", "kid": "0001", "iss": "tf validator"}'
+          header=$(jq -c --arg siat "$(date +%s)" '
+              ($siat | tonumber) as $iat
+              | .alg = "RS256"
+              | .iat = $iat
+              | .exp = ($iat + 1)
+            ' <<<"$header_template" | tr -d '\n')
+          echo "$TFPEM" > tf.pem
+          b64enc() { openssl enc -base64 -A | tr '+/' '-_' | tr -d '='; }
+          json() { jq -c . | LC_CTYPE=C tr -d '\n'; }
+          sign() { openssl dgst -binary -sha256 -sign tf.pem; }
+          payload="{
+            \"iat\": $(date +%s),
+            \"exp\": $(( $(date +%s)+600 )),
+            \"iss\": \"206698\"
+          }"
+          content="$(json <<<"$header"|b64enc).$(json <<<"$payload"|b64enc)"
+          sig=$(printf %s "$content" | sign | b64enc)
+          JWT=${content}.${sig}
+          TFTOKEN=$(curl -X POST                                              \
+            -H "Authorization: Bearer $JWT"                                   \
+            -H "Accept: application/vnd.github.v3+json"                       \
+             https://api.github.com/app/installations/26155664/access_tokens  \
+             | jq -r '.token')
+          echo "TFTOKEN=$TFTOKEN" >> $GITHUB_ENV
+
+      - name: validate terraform
+        run: |
+          git config --global                                         \
+            url.https://x-access-token:$TFTOKEN@github.com.insteadOf  \
+            ssh://git@github.com
+          for Dir in $(find . -type f -name '*.tf' -printf "%h\n" | sort -u); do
+            pushd ${Dir}
+            TF_IN_AUTOMATION=1 /usr/bin/terraform init -backend=false
+            /usr/bin/terraform validate .
+            popd
+          done
