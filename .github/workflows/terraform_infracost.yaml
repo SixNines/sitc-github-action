@@ -9,7 +9,7 @@ on:
         description: "Working directory"
         type: string
         required: false
-        default: "."
+        default: "./.config/infracost"
 
 jobs:
   infracost:
@@ -35,11 +35,11 @@ jobs:
 
       - name: Terraform init
         run: terraform init
-        working-directory: ${{ inputs.working-directory }}/.config/infracost
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Terraform plan
         run: terraform plan -out tfplan.binary
-        working-directory: ${{ inputs.working-directory }}/.config/infracost
+        working-directory: ${{ inputs.working-directory }}
 
       - name: Terraform show
         run: terraform show -json tfplan.binary > plan.json
