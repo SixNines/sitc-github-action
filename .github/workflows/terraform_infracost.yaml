@@ -14,36 +14,12 @@ on:
 jobs:
   infracost:
     runs-on: ubuntu-latest # The following are JavaScript actions (not Docker)
-    # env:
-    #   working-directory: '.'
+    env:
+      working-directory: '.'
     name: Run Infracost
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-
-      - name: install terraform
-        run: |
-          sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-          sudo apt-get update
-          sudo apt-get remove terraform
-          sudo apt-get install terraform=1.0.9
-          /usr/bin/terraform --version
-
-      # IMPORTANT: add any required steps here to setup cloud credentials so Terraform can run
-
-      - name: Terraform init
-        run: terraform init
-        working-directory: ${{ inputs.working-directory }}
-
-      - name: Terraform plan
-        run: terraform plan -out tfplan.binary
-        working-directory: ${{ inputs.working-directory }}
-
-      - name: Terraform show
-        run: terraform show -json tfplan.binary > plan.json
-        working-directory: ${{ inputs.working-directory }}
 
       # Install the Infracost CLI, see https://github.com/infracost/actions/tree/master/setup
       # for other inputs such as version, and pricing-api-endpoint (for self-hosted users).
