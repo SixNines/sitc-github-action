@@ -14,8 +14,8 @@ on:
 jobs:
   infracost:
     runs-on: ubuntu-latest # The following are JavaScript actions (not Docker)
-    env:
-      working-directory: '.'
+    # env:
+    #   working-directory: '.'
     name: Run Infracost
     steps:
       - name: Check out repository
