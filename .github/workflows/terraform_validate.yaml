@@ -3,6 +3,12 @@ name: Terraform Validate
 
 on:
   workflow_call:
+    inputs:
+      working-directory:
+        description: "Working directory"
+        type: string
+        required: false
+        default: "."
     secrets:
       TERRAFORM_VALIDATOR_KEY:
         required: true
@@ -61,13 +67,17 @@ jobs:
           echo "TFTOKEN=$TFTOKEN" >> $GITHUB_ENV
 
       - name: validate terraform
+        env:
+          working-directory: ${{ inputs.working-directory }}
         run: |
           git config --global                                         \
             url.https://x-access-token:$TFTOKEN@github.com.insteadOf  \
             ssh://git@github.com
-          for Dir in $(find . -type f -name '*.tf' -printf "%h\n" | sort -u); do
-            pushd ${Dir}
+          if [[ -d ${working-directory} ]]; then
+            cd ${working-directory}
             TF_IN_AUTOMATION=1 /usr/bin/terraform init -backend=false
             /usr/bin/terraform validate .
-            popd
-          done
+          else
+            echo ${working-directory} does not exist!
+            exit 1
+          fi
