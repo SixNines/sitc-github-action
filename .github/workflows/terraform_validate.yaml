@@ -67,17 +67,10 @@ jobs:
           echo "TFTOKEN=$TFTOKEN" >> $GITHUB_ENV
 
       - name: validate terraform
-        env:
-          working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-directory }}
         run: |
           git config --global                                         \
             url.https://x-access-token:$TFTOKEN@github.com.insteadOf  \
             ssh://git@github.com
-          if [[ -d ${working-directory} ]]; then
-            cd ${working-directory}
-            TF_IN_AUTOMATION=1 /usr/bin/terraform init -backend=false
-            /usr/bin/terraform validate .
-          else
-            echo ${working-directory} does not exist!
-            exit 1
-          fi
+          TF_IN_AUTOMATION=1 /usr/bin/terraform init -backend=false
+          /usr/bin/terraform validate .
