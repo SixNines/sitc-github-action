@@ -4,7 +4,7 @@ on: workflow_call
 
 jobs:
   format-check:
-    name: Check terraform docs
+    name: docs
     runs-on: ubuntu-latest
 
     steps:

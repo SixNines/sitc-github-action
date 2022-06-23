@@ -4,7 +4,7 @@ on: workflow_call
 
 jobs:
   format-check:
-    name: Check python black
+    name: black
     runs-on: ubuntu-latest
 
     steps:
